@@ -50,7 +50,3 @@ I referenced online tutorials to better understand **Perlin noise** implementati
 
 ### Example Screenshot:
 ![An screenshot of the example](screenshot_of_the_example.png)
-
----
-
-This README provides a comprehensive overview of the project, including interaction instructions, individual contributions, technical details, and inspiration sources.
