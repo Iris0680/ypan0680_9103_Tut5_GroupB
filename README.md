@@ -28,6 +28,9 @@ This approach ensures that my work is distinct from other group members by empha
 The design and animation were influenced by:
 - **Snowfall GIFs**: These provided a reference for creating a realistic, calming snow effect, ensuring the snowflakes fall at a natural pace and with a soft opacity.
 - **Organic Movement Animations**: I explored animations that used Perlin noise to create lifelike, smooth transitions, which inspired the gentle flow of snowflakes and the subtle movements in this artwork.
+- 
+### Example Image:
+![Snow picture](https://pic.52112.com/180528/JPG-180528_452/y5q8GDbOkI_small.jpg)  
 
 ## Technical Explanation
 - **Perlin Noise Implementation**: Perlin noise drives the movement of snowflakes, giving them a fluid, organic drift as they descend.
