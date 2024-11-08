@@ -37,8 +37,14 @@ The design and animation were influenced by:
 - **Mouse Interaction**: The `mouseMoved` function detects the mouse's position, adjusting elements' properties like color and size based on proximity.
 - **Outline Thickness Control**: A custom function calculates outline thickness for each element based on its vertical position, with shapes closer to the bottom having thicker outlines for a bolder appearance.
 
-## Modifications to Group Code
-Significant changes to the group code include:
+## Modifications to Code
+At first, I wanted to learn from By Steve's Makerspace
+[View Example Code] ( https://editor.p5js.org/StevesMakerspace/sketches/AWvuvS1VG )
+I made my first attempt to fill the background with apples of all sizes.
+![An screenshot of the first attempt](screenshot_of_the_example1.png)
+But I found the picture too chaotic, so I gave up the idea.
+
+Significant changes to the final code include:
 - Implementing Perlin noise for fluid snowflake movement.
 - Adding mouse-driven color transitions and fade-out effects.
 - Adjusting outline thickness based on `y` position for increased visual depth in the composition.
