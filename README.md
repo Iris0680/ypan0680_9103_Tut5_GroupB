@@ -5,8 +5,8 @@ This project is an interactive animated artwork designed to engage users through
 
 ## Interaction Instructions
 - **Mouse Interaction**: Move the mouse slowly across the screen to observe changes in the circles’ colors and sizes. Hovering over specific elements will trigger a fade-out effect.
-- **Automatic Animation**: The snow animation begins automatically when the page loads and continues indefinitely, creating a soft, continuous snowfall across the screen.
-- **Outline Thickness**: The base of the "apple tree" and lower elements have varying outline thicknesses that increase closer to the bottom of the canvas, adding depth and contrast to the composition.
+-**Perlin Noise * *: Create soft, floating snow on the screen.
+-**Contour thickness * *: The bottom contour thickness of the "apple tree" is thicker, and the top contour thickness is thinner. Added the realism of snow falling on the canvas.
 
 ## Individual Approach
 My individual contribution to the project centers around creating an organic, interactive experience by combining **Perlin noise** and **mouse-driven interaction**. This approach makes the animation flow smoothly, with unique feedback when users engage with different parts of the artwork.
@@ -42,6 +42,11 @@ Significant changes to the group code include:
 
 ## External Techniques
 I referenced online tutorials to better understand **Perlin noise** implementation, which helped me create natural, flowing animations. These tutorials were particularly useful for understanding noise-based movement, which I adapted to suit the snowfall effect in this artwork.
+### Example Link:
+[View Example Code](https://miguelrr11.github.io/Noise_Flow_Field/)
+
+### Example Screenshot:
+![An screenshot of the example](screenshot_of_the_example.png)
 
 ---
 
