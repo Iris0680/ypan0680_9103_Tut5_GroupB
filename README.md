@@ -40,9 +40,9 @@ The design and animation were influenced by:
 ## Modifications to Code
 At first, I wanted to learn from By Steve's Makerspace
 [View Example Code](https://editor.p5js.org/StevesMakerspace/sketches/AWvuvS1VG)
-I made my first attempt to fill the background with apples of all sizes.
+I made my first attempt to fill the background with apples of all sizes. But I found the picture too chaotic, so I gave up the idea.
+### Example Screenshot:
 ![An screenshot of the first attempt](Final/screenshot_of_the_example1.png)
-But I found the picture too chaotic, so I gave up the idea.
 
 Significant changes to the final code include:
 - Implementing Perlin noise for fluid snowflake movement.
