@@ -49,4 +49,4 @@ I referenced online tutorials to better understand **Perlin noise** implementati
 [View Example Code](https://miguelrr11.github.io/Noise_Flow_Field/)
 
 ### Example Screenshot:
-![An screenshot of the example](screenshot_of_the_example.png)
+![An screenshot of the example](final/screenshot_of_the_example.png)
