@@ -34,7 +34,7 @@ The design and animation were influenced by:
 
 ## Technical Explanation
 - **Perlin Noise Implementation**: Perlin noise drives the movement of snowflakes, giving them a fluid, organic drift as they descend.
-- **Mouse Interaction**: The `mouseMoved` function detects the mouse's position, adjusting elements' properties like color and size based on proximity.
+- **Mouse Interaction**: The `mouseMoved` function detects the mouse's position, adjusting elements' properties like color.
 - **Outline Thickness Control**: A custom function calculates outline thickness for each element based on its vertical position, with shapes closer to the bottom having thicker outlines for a bolder appearance.
 
 ## Modifications to Code
