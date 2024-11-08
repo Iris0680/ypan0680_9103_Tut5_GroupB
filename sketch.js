@@ -1,52 +1,93 @@
-// Array to store circles for the foreground
-let myCircles = []; 
-let numOfCircles = 33; 
+let myCircles = [];
+let numOfCircles = 33;
+let snowflakes = []; // Array to store snowflakes
 
-// Variables for positioning and sizing elements
-let bottomX = 111;
-let bottomY = 494;
-let diameter1 = 34;
-let diameter2 = 25;
-let spacing1 = 37;
-let spacing2 = 105;
-let spacing3 = 43;
-let topX1 = 148;
-let topX2 = 180;
-let topY = 445;
-
-let noiseScale = 0.1; // Scale for Perlin noise
-let zOffset = 0; // Offset for dynamic effect
-let particleAlpha = 20; // Transparency for flowing lines
-
-// Positions and sizes for foreground circles
 let circlePositions = [
-  [85, 40], [85, 85], [90, 120], [114, 130], [122, 153], [120, 183],
-  [125, 224], [150, 248], [175, 252], [198, 247], [222, 253], [247, 250],
-  [272, 248], [280, 218], [285, 190], [289, 158], [285, 125], [300, 120],
-  [325, 125], [350, 134], [358, 115], [180, 165], [170, 185], [190, 183],
-  [210, 204], [230, 185], [241, 170], [210, 230], [210, 289], [200, 340],
-  [202, 385], [208, 410], [200, 432]
+  [85,40],[85,85],[90,120],[114,130],[122,153],[120,183],[125,224],[150,248],[175,252],[198,247],
+  [222,253],[247,250],[272,248],[280,218],[285,190],[289,158],[285,125],[300,120],[325,125],[350,134],
+  [358,115],[180,165],[170,185],[190,183],[210,204],[230,185],[241,170],[210,230],
+  [210,289],[200,340],[202,385],[208,410],[200,432]
 ];
 let circleDiameters = [50, 43, 29, 27, 23, 40, 53, 28, 26, 20, 31, 22, 33, 35, 25, 44, 20, 15, 33, 22, 20, 16, 16, 26, 35, 22, 16, 20, 47, 61, 30, 23, 23];
 
-// Particle system for background flow
-let particles = [];
-let cols, rows;
-let scl = 10; // Scale for the flow field
+const rez = 40;
+let grid = [];
+let balls = [];
+let nBalls = 1000;
+let offsetX, offsetY;
 
 function setup() {
-  createCanvas(400, 600);
-  cols = floor(width / scl);
-  rows = floor(height / scl);
+  createCanvas(windowWidth, windowHeight);
+  background(91, 113, 129);
 
-  // Initialize flow field particles
-  for (let i = 0; i < 1000; i++) {
-    particles.push(new Particle());
+  // Offset to center the "apple tree" and its base
+  offsetX = width / 2 - 210;
+  offsetY = height / 2 - 250;
+
+  for (let i = 0; i < numOfCircles; i++) {
+    let x = circlePositions[i][0] + offsetX;
+    let y = circlePositions[i][1] + offsetY;
+    myCircles.push(new MyCircleClass(x, y, circleDiameters[i]));
   }
 
-  // Initialize circles for foreground
+  for (let i = 0; i < nBalls; i++) {
+    balls.push(new Ball(createVector(random(width), random(height))));
+  }
+}
+
+function draw() {
+  let spacing = min(width, height) / rez;
+  noStroke();
+  fill(91, 113, 129, 25);
+  rect(0, 0, width, height);
+
+  // Generate Perlin noise flow field for background animation
+  for (let i = 0; i < rez; i++) {
+    grid[i] = [];
+    for (let j = 0; j < rez; j++) {
+      let x = i * spacing - width / 2 + spacing / 2;
+      let y = j * spacing - height / 2 + spacing / 2;
+      let angle = map(noise(i / 10, j / 10, frameCount / 200), 0, 1, -TWO_PI, TWO_PI);
+      grid[i][j] = createVector(x, y, angle);
+    }
+  }
+
+  push();
+  translate(width / 2, height / 2);
+  for (let b of balls) {
+    let x = floor(constrain(b.pos.x + width / 2, 0, width - 1) / spacing);
+    let y = floor(constrain(b.pos.y + height / 2, 0, height - 1) / spacing);
+    b.followField(grid[x][y].z);
+    b.applyForce();
+    b.update();
+    b.edges();
+    b.show();
+  }
+  pop();
+
+  for (let circle of myCircles) {
+    circle.draw();
+  }
+
+  drawForegroundShapes();
+  createSnow();
+  drawSnow();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  background(91, 113, 129);
+
+  // Update offsets to re-center the "apple tree"
+  offsetX = width / 2 - 210;
+  offsetY = height / 2 - 250;
+
+  // Reinitialize circles with updated positions
+  myCircles = [];
   for (let i = 0; i < numOfCircles; i++) {
-    myCircles.push(new MyCircleClass(circlePositions[i][0], circlePositions[i][1], circleDiameters[i]));
+    let x = circlePositions[i][0] + offsetX;
+    let y = circlePositions[i][1] + offsetY;
+    myCircles.push(new MyCircleClass(x, y, circleDiameters[i]));
   }
 }
 
@@ -57,74 +98,49 @@ class MyCircleClass {
     this.size = size;
     this.color1 = color(228, 102, 103);
     this.color2 = color(142, 171, 126);
+    this.fadeAlpha = 255;
+    this.isHovered = false;
   }
-  
+
   draw() {
-    fill(this.color1);
-    noStroke();
-    arc(this.x, this.y, this.size, this.size, HALF_PI, -HALF_PI, PIE);
-    fill(this.color2);
-    arc(this.x, this.y, this.size, this.size, -HALF_PI, HALF_PI, PIE);
-  }
-}
+    // Adjust stroke weight based on vertical position (y) for thicker outlines at the bottom
+    let strokeWeightValue = map(this.y, offsetY, height, 1, 6);
+    stroke(255);
+    strokeWeight(strokeWeightValue);
 
-function draw() {
-  drawFlowingBackground(); // Draw dynamic background with flowing effect
-
-  // Draw each circle as part of the foreground
-  for (let i = 0; i < numOfCircles; i++) {
-    myCircles[i].draw();
-  }
-
-  // Draw additional foreground elements
-  drawBottomShapes();
-
-  // Increment zOffset to create flow in the background
-  zOffset += 0.01;
-}
-
-function drawFlowingBackground() {
-  background(30, 30, 40, 50); // Slightly translucent background for blending
-
-  // Create Perlin noise flow field and move particles
-  let yOffset = 0;
-  for (let y = 0; y < rows; y++) {
-    let xOffset = 0;
-    for (let x = 0; x < cols; x++) {
-      let angle = noise(xOffset, yOffset, zOffset) * TWO_PI * 4;
-      let v = p5.Vector.fromAngle(angle);
-      v.setMag(1);
-      xOffset += noiseScale;
+    if (dist(mouseX, mouseY, this.x, this.y) < this.size / 2) {
+      this.isHovered = true;
+      this.fadeAlpha = 255;
     }
-    yOffset += noiseScale;
-  }
 
-  // Move and display particles
-  for (let particle of particles) {
-    particle.follow();
-    particle.update();
-    particle.edges();
-    particle.show();
+    if (this.isHovered) {
+      fill(255, this.fadeAlpha);
+      ellipse(this.x, this.y, this.size);
+      this.fadeAlpha -= 5;
+      if (this.fadeAlpha <= 0) {
+        this.isHovered = false;
+        this.fadeAlpha = 255;
+      }
+    } else {
+      fill(this.color1);
+      arc(this.x, this.y, this.size, this.size, HALF_PI, -HALF_PI, PIE);
+      fill(this.color2);
+      arc(this.x, this.y, this.size, this.size, -HALF_PI, HALF_PI, PIE);
+    }
+    noStroke(); // Disable stroke for other elements
   }
 }
 
-// Particle class for background flow effect
-class Particle {
-  constructor() {
-    this.pos = createVector(random(width), random(height));
+class Ball {
+  constructor(pos) {
+    this.pos = pos;
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
-    this.maxSpeed = 2;
-    this.prevPos = this.pos.copy();
   }
 
-  follow() {
-    let x = floor(this.pos.x / scl);
-    let y = floor(this.pos.y / scl);
-    let index = x + y * cols;
-    let angle = noise(x * noiseScale, y * noiseScale, zOffset) * TWO_PI * 4;
+  followField(angle) {
     let force = p5.Vector.fromAngle(angle);
-    force.setMag(0.1);
+    force.mult(0.5);
     this.applyForce(force);
   }
 
@@ -134,98 +150,95 @@ class Particle {
 
   update() {
     this.vel.add(this.acc);
-    this.vel.limit(this.maxSpeed);
     this.pos.add(this.vel);
     this.acc.mult(0);
   }
 
-  show() {
-    stroke(255, particleAlpha); // Set color and transparency for flowing effect
-    strokeWeight(1);
-    line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
-    this.updatePrev();
-  }
-
-  updatePrev() {
-    this.prevPos.x = this.pos.x;
-    this.prevPos.y = this.pos.y;
-  }
-
   edges() {
-    if (this.pos.x > width) {
-      this.pos.x = 0;
-      this.updatePrev();
-    }
-    if (this.pos.x < 0) {
-      this.pos.x = width;
-      this.updatePrev();
-    }
-    if (this.pos.y > height) {
-      this.pos.y = 0;
-      this.updatePrev();
-    }
-    if (this.pos.y < 0) {
-      this.pos.y = height;
-      this.updatePrev();
-    }
+    if (this.pos.x > width / 2) this.pos.x = -width / 2;
+    if (this.pos.x < -width / 2) this.pos.x = width / 2;
+    if (this.pos.y > height / 2) this.pos.y = -height / 2;
+    if (this.pos.y < -height / 2) this.pos.y = height / 2;
+  }
+
+  show() {
+    stroke(255, 100);
+    strokeWeight(2);
+    point(this.pos.x, this.pos.y);
   }
 }
 
-// Foreground shapes (rectangles and semicircles)
-function drawBottomShapes() {
-  stroke(0);
-  strokeWeight(2);
-
+function drawForegroundShapes() {
+  // Draw bottom green rectangle with a thick white outline
+  stroke(255);
+  strokeWeight(4); // Thick white outline
   fill(142, 171, 126);
-  rect(27, 450, 345, 55);
-  line(65, 450, 65, 505);
-  line(340, 450, 340, 505);
+  rect(27 + offsetX, 450 + offsetY, 345, 55);
 
+  // Draw left and right vertical lines with thick white outline
+  strokeWeight(4); // Thicker outline for vertical lines
+  line(65 + offsetX, 450 + offsetY, 65 + offsetX, 505 + offsetY);
+  line(340 + offsetX, 450 + offsetY, 340 + offsetX, 505 + offsetY);
+
+  // Draw bottom yellow rectangle with a thick white outline
+  strokeWeight(4); // Thick outline for the yellow rectangle
   fill(217, 194, 125);
-  rect(92, 444, 204, 52);
+  rect(92 + offsetX, 444 + offsetY, 204, 52);
 
-  stroke(217, 194, 125);
+  // Draw smaller red and green rectangles with thick white outline
+  strokeWeight(4); // Thick outline for small rectangles
   fill(228, 102, 103);
-  rect(130, 446, 35, 48);
-
+  rect(130 + offsetX, 446 + offsetY, 35, 48);
   fill(142, 171, 126);
-  rect(165, 446, 37, 48);
-  rect(237, 446, 35, 48);
+  rect(165 + offsetX, 446 + offsetY, 37, 48);
+  rect(237 + offsetX, 446 + offsetY, 35, 48);
 
-  arc(285, 494, 19, 28, PI, 0, fill(142, 171, 126));
+  // Remove stroke for other elements after drawing the base
+  noStroke();
+}
 
-  for (let i = 0; i < 2; i++) {
-    fill(i % 2 === 0 ? color(142, 171, 126) : color(228, 102, 103));
-    arc(topX1 + i * spacing2, topY, diameter1, diameter1, 0, PI);
+// Function to create snowflakes at the top
+function createSnow() {
+  let t = frameCount / 60;
+  if (random() < 0.3) {
+    snowflakes.push(new Snowflake(random(width), -10));
+  }
+}
+
+// Function to display and update snowflakes
+function drawSnow() {
+  for (let flake of snowflakes) {
+    flake.update();
+    flake.show();
+  }
+}
+
+class Snowflake {
+  constructor(x, y) {
+    this.pos = createVector(x, y);
+    this.vel = createVector(0, random(1, 3));
+    this.acc = createVector();
+    this.size = random(2, 5);
   }
 
-  for (let i = 0; i < 2; i++) {
-    fill(i % 2 === 0 ? color(228, 102, 103) : color(142, 171, 126));
-    arc(topX2 + i * spacing3, topY, diameter2, diameter2, 0, PI);
+  applyForce(force) {
+    this.acc.add(force);
   }
 
-  for (let i = 0; i < 3; i++) {
-    fill(i % 3 === 0 ? color(142, 171, 126) : (i % 3 === 1 ? color(217, 194, 125) : color(228, 102, 103)));
-    arc(bottomX + i * spacing1, bottomY, diameter1, diameter1, PI, 0);
+  update() {
+    this.vel.add(this.acc);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+
+    if (this.pos.y > height) {
+      this.pos.y = random(-10, 0);
+      this.pos.x = random(width);
+    }
   }
 
-  for (let i = 0; i < 2; i++) {
-    fill(i % 2 === 0 ? color(228, 102, 103) : color(217, 194, 125));
-    arc(bottomX + i * spacing1 + 110, bottomY, diameter1, diameter1, PI, 0);
+  show() {
+    noStroke();
+    fill(255, 200);
+    ellipse(this.pos.x, this.pos.y, this.size);
   }
-
-  stroke(0);
-  strokeWeight(2);
-  for (let i = 0; i < 2; i++) {
-    fill(i % 2 === 0 ? color(228, 102, 103) : color(142, 171, 126));
-    arc(topX1 + i * spacing2, topY, diameter1, diameter1, PI, 0);
-  }
-
-  for (let i = 0; i < 2; i++) {
-    fill(i % 2 === 0 ? color(142, 171, 126) : color(228, 102, 103));
-    arc(topX2 + i * spacing3, topY, diameter2, diameter2, PI, 0);
-  }
-
-  stroke(217, 194, 125);
-  line(130, 446, 270, 446);
 }
